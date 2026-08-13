@@ -1,0 +1,8 @@
+# Tetovo, North Macedonia — the paper's study area
+place: "Tetovo, North Macedonia"
+utm_crs: "EPSG:32634"
+candidates_csv: "data/tetovo/candidate_locations.csv"
+aq_csv: "data/tetovo/tetovo-air-quality-aqi.csv"
+weather_csv: "data/tetovo/tetovo_hourly_weather.csv"
+rssi_bias_db: -12.4      # field-calibrated operating point (set 0 for optimistic)
+k_gateways: 5
