@@ -61,6 +61,21 @@ Set `rssi_bias_db: 0` for the optimistic radio model or `-12.4` for the field-ca
 operating point used in the paper. Sweep it over `{0, -5, -10, -12.4, -15, -20}` to reproduce
 the robustness analysis.
 
+## Fading models (why the Monte Carlo engine exists)
+
+`aqlora.fading` provides samplers for models with **no closed-form** link statistics:
+spatially **correlated shadowing** (Gudmundson, exponential decorrelation),
+**Rician multipath** (K-factor), and an **empirical** sampler that bootstraps
+field-measured RSSI residuals. The i.i.d. Gaussian case has an exact closed form
+(`propagation.closed_form`), which the engine uses as a correctness oracle; the Monte
+Carlo engine is what makes the richer models tractable, on CPU or GPU:
+
+```python
+from aqlora import propagation, fading
+sampler = fading.correlated_shadowing(coords_xy, sigma_db=8.0, decorrelation_m=150)
+rel, sf = propagation.monte_carlo(mu, sens, 8.0, sampler=sampler)  # GPU if cupy present
+```
+
 ## Notes & provenance
 
 - **Building heights:** by default estimated from OSM `height`/`building:levels` tags with a

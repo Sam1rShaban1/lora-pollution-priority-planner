@@ -74,9 +74,10 @@ def closed_form(mu: np.ndarray, sens: list, sigma: float):
 
 
 def monte_carlo(mu: np.ndarray, sens: list, sigma: float, n_iter: int = 10000,
-                use_gpu: bool = True, seed: int = 1):
-    """Monte Carlo link simulation (CuPy if available). Generalizes to
-    correlated / non-Gaussian fading by swapping the sampler."""
+                use_gpu: bool = True, seed: int = 1, sampler=None):
+    """Monte Carlo link simulation (CuPy if available). Pass a fading sampler
+    from aqlora.fading to run correlated / multipath / empirical models
+    (none of which admits the closed form)."""
     xp = np
     if use_gpu:
         try:
@@ -90,13 +91,14 @@ def monte_carlo(mu: np.ndarray, sens: list, sigma: float, n_iter: int = 10000,
     n = mu.shape[0]
     rel = xp.zeros((n, n), dtype=xp.float32)
     sf_sum = xp.zeros((n, n), dtype=xp.float32)
-    if xp is np:
-        rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed)
     batch = max(1, min(n_iter, int(2e8 // (n * n))))
     done = 0
     while done < n_iter:
         b = min(batch, n_iter - done)
-        if xp is np:
+        if sampler is not None:
+            fading = sampler(xp, n, b, rng if xp is np else None)
+        elif xp is np:
             fading = rng.normal(0, sigma, size=(n, n, b)).astype(np.float32)
         else:
             fading = xp.random.normal(0, sigma, size=(n, n, b), dtype=xp.float32)

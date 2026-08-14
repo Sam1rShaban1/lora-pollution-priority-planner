@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aqlora"
+version = "1.1.0"
+description = "Pollution-priority-aware LoRaWAN gateway placement from open data"
+license = {text = "MIT"}
+authors = [{name = "Samir Shabani"}, {name = "Mennan Selimi"}]
+requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.24", "pandas>=2.0", "scipy>=1.10", "geopandas>=0.14",
+  "shapely>=2.0", "osmnx>=1.9", "requests", "Pillow", "pymoo>=0.6",
+  "xgboost>=2.0", "scikit-learn>=1.3", "pyyaml", "matplotlib",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
