@@ -95,6 +95,21 @@ def test_notebook_fixed_plan_metrics():
     assert row["Repr. error"] == 0.0866
 
 
+def test_sweeps_smoke():
+    """delta/budget/seed sweeps must run and report site sets."""
+    ctx = _ctx()
+    delta = joint.delta_sweep(ctx, 5, 3, [-12.4, -5], pop=20, gens=3)
+    assert len(delta) == 2
+    assert "Gateway sites" in delta.columns
+    assert bool(delta.loc["delta=-12.4", "Same gateways as ref"])
+    df_k, df_m = joint.budget_sweep(ctx, 5, [3, 4], [5, 10], k_fixed=3,
+                                    pop=20, gens=3)
+    assert len(df_k) == 2 and len(df_m) == 2
+    pairs, fixed, _ = joint.seed_control(
+        ctx, 5, 3, seeds=(42, 7), pop=20, gens=3, delta_list=[-12.4, -5])
+    assert len(pairs) == 1 and len(fixed) == 2
+
+
 def test_pm_reference_summary():
     with open(os.path.join(ROOT, "data", "tetovo", "pm_map_summary.json")) as f:
         summary = json.load(f)

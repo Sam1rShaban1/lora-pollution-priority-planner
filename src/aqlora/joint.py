@@ -533,8 +533,8 @@ def delta_sweep(ctx: dict, m: int, k: int, delta_list=None,
                                 ctx.get("sf_penalty", 13.0), use_gpu=use_gpu),
                    m, k, seed=seed, pop=pop, gens=gens,
                    allow_colocation=allow_colocation)
-    ref_g = set(ids_of(ref, ref["G"]))
-    ref_s = set(ids_of(ref, ref["S"]))
+    ref_g = set(ids_of(data, ref["G"]))
+    ref_s = set(ids_of(data, ref["S"]))
     rows = []
     for d in (delta_list or DEFAULT_DELTA_LIST):
         c = make_context(data, d, ctx["reliability_threshold"],
@@ -542,7 +542,7 @@ def delta_sweep(ctx: dict, m: int, k: int, delta_list=None,
                          ctx.get("sf_penalty", 13.0), use_gpu=use_gpu)
         r = optimize(c, m, k, seed=seed, pop=pop, gens=gens,
                      allow_colocation=allow_colocation)
-        g_set, s_set = set(ids_of(r, r["G"])), set(ids_of(r, r["S"]))
+        g_set, s_set = set(ids_of(data, r["G"])), set(ids_of(data, r["S"]))
         row = describe(c, r["S"], r["G"], f"delta={d}")
         row["Same gateways as ref"] = (g_set == ref_g)
         row["Sensor overlap with ref (Jaccard)"] = (
