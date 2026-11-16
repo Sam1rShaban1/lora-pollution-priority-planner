@@ -24,11 +24,16 @@ air-quality sensor network for a city that has (at most) a single reference moni
 pip install -r requirements.txt
 
 # the paper's study area (Tetovo, North Macedonia), calibrated operating point:
-python scripts/run_pipeline.py --config configs/tetovo.yaml
+python scripts/run_pipeline.py --config configs/tetovo.yaml            # joint placement
+python scripts/run_pipeline.py --config configs/tetovo.yaml --stage pm-map   # PM2.5 surface
+python scripts/run_pipeline.py --config configs/tetovo.yaml --stage gateway  # legacy open-data
 
 # any other city: copy configs/template.yaml, change `place`, and run
 python scripts/run_pipeline.py --config configs/my_city.yaml
 ```
+
+`--stage joint` (default) and `--stage pm-map` are the two notebook-equivalent stages.
+`--stage gateway` keeps the original open-data, gateway-only pipeline.
 
 The pipeline needs **zero credentials and zero local data** for a new city: road/industrial/
 foliage/building layers come from OpenStreetMap, elevation and slope from AWS Terrain Tiles,
@@ -40,6 +45,68 @@ are valid even without them.
 Outputs (in `outputs/`): candidate list with priority values, reliability & SF matrices,
 and a `deployment_report.json` comparing priority-weighted NSGA-II, uniform NSGA-II, and
 greedy set-cover placements (coverage, hotspot coverage, average SF).
+
+## Notebook parity (canonical experiments)
+
+The two notebooks used for the paper are committed verbatim in `notebooks/`:
+
+| Notebook | Package equivalent | CLI |
+|---|---|---|
+| `NSGA_2_LoRa_joint.ipynb` | `aqlora.joint` | `--stage joint` |
+| `synthetic_pm_map_v2.ipynb` | `aqlora.pm_map` | `--stage pm-map` |
+
+The package ports keep the notebooks' link model, three objectives, cardinality-preserving
+NSGA-II operators, compromise selection rule, units audit, weather model, spatial corrections,
+station anchoring, robustness draws, output columns, and summary schema. `joint` also exposes
+an optional CuPy backend (`--no-gpu` disables it) that mirrors the notebook's GPU path.
+
+Validate the committed artifacts and the notebook logic at any time:
+
+```bash
+python scripts/check_parity.py --config configs/tetovo.yaml            # full
+python scripts/check_parity.py --config configs/tetovo.yaml --quick    # smoke test
+python scripts/check_parity.py --config configs/tetovo.yaml --strict   # also require GPU site set
+```
+
+The harness proves the notebook's saved plan reproduces its exact metrics
+(100% sensor coverage, 12 hotspot sensors, 80.8% weighted coverage, average SF 7.10,
+representativeness error 0.0866) and that the PM surface/summary match the saved artifacts.
+
+**GPU caveat.** The saved notebook run used CuPy, so its exact Pareto selection
+(sensors `5,8,11,15,33,39,40,41,58,60,61,63,65,87,99`; gateways `14,31,36,64,83`) is only
+asserted with `--strict`. On CPU the NSGA-II explores a different Pareto frontier and the
+compromise plan differs, while the algorithm, link model, and per-plan metrics are identical.
+
+### PM-map raw inputs
+
+`--stage pm-map` needs the raw geospatial layers, which are not shipped (they are large).
+Set `export PM_MAP_RAW=/path/to/pm_map_raw` (the config resolves `${PM_MAP_RAW}`), laid out as:
+
+```text
+pm_map_raw/
+├── AP_01806_FBS_F0820_RT1/AP_01806_FBS_F0820_RT1/AP_01806_FBS_F0820_RT1_reprojected.dem.tif
+├── viz/viz.hh_slope.tif
+├── roads.geojson
+├── industrial_areas.geojson
+├── tetovo_buildings.geojson
+└── foliage.geojson
+```
+
+A rerun on this data reproduces the committed `candidate_locations_with_pm.csv` surface columns
+(`predicted_pm`, `pm_p05/p95`, `hotspot`, `hotspot_prob`, `spatial_factor`, all `term_*`)
+and the summary's `units`, `spatial`, and `robustness` blocks to numerical precision, along with
+the exact layer counts (roads 248, industrial 21, buildings 13,114, foliage 13, grid 168×178,
+29,904 points inside the DEM). The committed artifacts are the reference outputs.
+
+The weather-model block is reproducible only with the exact weather export used for the paper:
+the public meteostat file in `data/tetovo/` has no dewpoint (`dwpt`) or peak-gust (`wpgt`)
+columns, so those features are dropped and the chronological holdout differs. Seasonal scaling
+(`pm_winter`, `pm_summer`) and model metrics therefore change, while the station-anchored spatial
+surface — the part the optimizer consumes — is unchanged. Supply a weather CSV with `dwpt` and
+`wpgt` to reproduce the reference holdout (`R² ≈ 0.709`, `RMSE ≈ 12.84`).
+
+`scripts/run_notebooks.py joint|pm-map` executes a patched temporary copy of a notebook against
+the local data without modifying the committed notebook.
 
 ## Reproducing the paper's experiments
 

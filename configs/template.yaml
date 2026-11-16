@@ -1,5 +1,6 @@
-# Template: copy this file and change `place` to run the pipeline anywhere.
-# With no AQ/weather data, the priority RANKING is still valid (baseline-invariant).
+# Template: copy this file and change `place` to run the open-data pipeline
+# anywhere. With no AQ/weather data, the priority RANKING is still valid
+# (baseline-invariant).
 place: "Skopje, North Macedonia"    # any OSM-geocodable place
 utm_crs: "EPSG:32634"               # metric CRS covering the place (UTM zone)
 candidates_csv: null                # null -> auto-generate candidates
@@ -9,3 +10,53 @@ weather_csv: null                   # optional: meteostat hourly export
 pm_baseline: 25.0                   # fallback baseline (ug/m3)
 rssi_bias_db: 0.0                   # apply your field calibration here
 k_gateways: 5
+
+# --- notebook-equivalent joint stage (requires precomputed artifacts) ---
+candidates_pm_csv: null
+rel_csv: null
+sf_csv: null
+mean_rssi_csv: null
+num_sensors: 15
+allow_colocation: false
+delta_db: -12.4
+sf_penalty: 13.0
+geo_weight: 0.7
+use_hotspot_prob: true
+hotspot_quantile: 0.75
+gamma: 4.0
+reliability_threshold: 0.99
+shadowing_sigma_db: 8.0
+pop_size: 500
+generations: 200
+seed: 42
+selection_weights: [1.0, 1.0, 1.0]
+run_baselines: true
+run_delta_sweep: false
+run_budget_sweep: false
+sweep_pop: 200
+sweep_gens: 100
+
+# --- PM-map v2 stage (requires the raw geospatial layers) ---
+# export PM_MAP_RAW=/path/to/pm_map_raw   # then uncomment the paths below
+# dem_path: "${PM_MAP_RAW}/AP_01806_FBS_F0820_RT1/AP_01806_FBS_F0820_RT1/AP_01806_FBS_F0820_RT1_reprojected.dem.tif"
+# slope_path: "${PM_MAP_RAW}/viz/viz.hh_slope.tif"
+# roads_path: "${PM_MAP_RAW}/roads.geojson"
+# industrial_path: "${PM_MAP_RAW}/industrial_areas.geojson"
+# buildings_path: "${PM_MAP_RAW}/tetovo_buildings.geojson"
+# foliage_path: "${PM_MAP_RAW}/foliage.geojson"
+# candidates_csv: "data/tetovo/candidate_locations_with_elevation.csv"
+# aq_csv: "data/tetovo/cleaned_tetovo_air_quality.csv"
+# weather_csv: "data/tetovo/tetovo_hourly_weather.csv"
+pm_is_aqi: null
+aqi_breakpoints: "epa_2012"
+model_choice: "xgboost"
+grid_res_m: 40.0
+density_radius_m: 500.0
+amplitude_scale: 1.0
+robust_norm: true
+anchor_to_station: true
+n_draws: 1000
+perturb: 0.5
+candidate_elev_source: "raster"
+
+out_dir: "outputs"

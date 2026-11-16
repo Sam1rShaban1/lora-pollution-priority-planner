@@ -1,8 +1,56 @@
 # Tetovo, North Macedonia — the paper's study area
 place: "Tetovo, North Macedonia"
 utm_crs: "EPSG:32634"
-candidates_csv: "data/tetovo/candidate_locations.csv"
-aq_csv: "data/tetovo/tetovo-air-quality-aqi.csv"
+
+# --- notebook-equivalent joint placement artifacts ---
+candidates_csv: "data/tetovo/candidate_locations_with_elevation.csv"
+candidates_pm_csv: "data/tetovo/candidate_locations_with_pm.csv"
+rel_csv: "data/tetovo/link_reliability_matrix_gpu_realistic.csv"
+sf_csv: "data/tetovo/link_average_sf_matrix_gpu_realistic.csv"
+mean_rssi_csv: "data/tetovo/link_mean_rssi_matrix.csv"
+
+# --- PM-map v2 inputs ---
+# The raw geospatial layers are large and intentionally not shipped. Set
+#   export PM_MAP_RAW=/path/to/pm_map_raw
+# and the paths below resolve from it. Without it, `--stage pm-map` reports
+# the missing inputs; `--stage joint` and `check_parity.py` still work.
+aq_csv: "data/tetovo/cleaned_tetovo_air_quality.csv"
 weather_csv: "data/tetovo/tetovo_hourly_weather.csv"
-rssi_bias_db: -12.4      # field-calibrated operating point (set 0 for optimistic)
+dem_path: "${PM_MAP_RAW}/AP_01806_FBS_F0820_RT1/AP_01806_FBS_F0820_RT1/AP_01806_FBS_F0820_RT1_reprojected.dem.tif"
+slope_path: "${PM_MAP_RAW}/viz/viz.hh_slope.tif"
+roads_path: "${PM_MAP_RAW}/roads.geojson"
+industrial_path: "${PM_MAP_RAW}/industrial_areas.geojson"
+buildings_path: "${PM_MAP_RAW}/tetovo_buildings.geojson"
+foliage_path: "${PM_MAP_RAW}/foliage.geojson"
+pm_summary_path: "outputs/pm_map_summary.json"
+
+# --- radio / calibration ---
+rssi_bias_db: -12.4      # legacy open-data stage
+delta_db: -12.4          # joint notebook radio-model offset
 k_gateways: 5
+num_sensors: 15
+allow_colocation: false
+sf_penalty: 13.0
+geo_weight: 0.7
+use_hotspot_prob: true
+hotspot_quantile: 0.75
+gamma: 4.0
+reliability_threshold: 0.99
+shadowing_sigma_db: 8.0
+
+# --- optimization ---
+pop_size: 500
+generations: 200
+seed: 42
+selection_weights: [1.0, 1.0, 1.0]
+run_baselines: true
+run_delta_sweep: true
+run_budget_sweep: true
+delta_ref: -12.4
+delta_list: [0, -5, -10, -12.4, -15, -20]
+k_list: [3, 4, 5, 6, 8, 10]
+m_list: [5, 10, 15, 20, 30, 50, 70, 80]
+sweep_pop: 200
+sweep_gens: 100
+
+out_dir: "outputs"

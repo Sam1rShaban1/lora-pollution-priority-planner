@@ -1,0 +1,154 @@
+{
+  "units": {
+    "treated_as_aqi": true,
+    "aqi_table": "epa_2012",
+    "pm25_gt_pm10_share": 0.7132001125809175,
+    "station_long_run_mean_ugm3": 35.36077070116031
+  },
+  "model": {
+    "chosen": "XGBoost (tuned)",
+    "features": [
+      "temp",
+      "temp_min",
+      "temp_max",
+      "dtr",
+      "hdd",
+      "dwpt",
+      "rhum",
+      "wspd",
+      "wpgt",
+      "pres",
+      "dpres",
+      "wdir_sin",
+      "wdir_cos",
+      "temp_roll3",
+      "wspd_roll3",
+      "doy_sin",
+      "doy_cos",
+      "is_weekend"
+    ],
+    "xgboost_params": {
+      "learning_rate": 0.03,
+      "max_depth": 4,
+      "min_child_weight": 3,
+      "n_estimators": 200
+    },
+    "holdout": {
+      "R2": 0.7087567656420481,
+      "RMSE": 12.843365537403443,
+      "MAE": 8.608883071977663
+    },
+    "train_days": 1576,
+    "holdout_days": 394,
+    "table": [
+      {
+        "Model": "Climatology (month mean)",
+        "CV R2": "0.38 +/- 0.22",
+        "CV RMSE": "22.2 +/- 8.4",
+        "Holdout R2": 0.513,
+        "Holdout RMSE": 16.6,
+        "Holdout MAE": 11.12
+      },
+      {
+        "Model": "Ridge",
+        "CV R2": "0.48 +/- 0.29",
+        "CV RMSE": "18.9 +/- 2.3",
+        "Holdout R2": 0.472,
+        "Holdout RMSE": 17.3,
+        "Holdout MAE": 13.75
+      },
+      {
+        "Model": "Random Forest",
+        "CV R2": "0.65 +/- 0.08",
+        "CV RMSE": "16.6 +/- 5.1",
+        "Holdout R2": 0.657,
+        "Holdout RMSE": 13.94,
+        "Holdout MAE": 9.34
+      },
+      {
+        "Model": "XGBoost (tuned)",
+        "CV R2": "0.66 +/- 0.10",
+        "CV RMSE": "16.0 +/- 4.7",
+        "Holdout R2": 0.709,
+        "Holdout RMSE": 12.84,
+        "Holdout MAE": 8.61
+      }
+    ]
+  },
+  "baselines": {
+    "model": {
+      "Annual": 32.951847076416016,
+      "Winter (Dec-Feb)": 59.76470184326172,
+      "Spring (Mar-May)": 21.664756774902344,
+      "Summer (Jun-Aug)": 14.537775993347168,
+      "Autumn (Sep-Nov)": 33.83584976196289,
+      "Winter stagnation (calm and cold)": 64.67214965820312
+    },
+    "observed": {
+      "Annual": 33.00724473785822,
+      "Winter (Dec-Feb)": 60.136905351457884,
+      "Spring (Mar-May)": 21.933176727670034,
+      "Summer (Jun-Aug)": 14.049565138694058,
+      "Autumn (Sep-Nov)": 33.83090762823424,
+      "Winter stagnation (calm and cold)": 64.63922712625721
+    },
+    "scale": {
+      "Annual": 1.0,
+      "Winter (Dec-Feb)": 1.813698082073097,
+      "Spring (Mar-May)": 0.657467143637239,
+      "Summer (Jun-Aug)": 0.4411824308250085,
+      "Autumn (Sep-Nov)": 1.0268271057308822,
+      "Winter stagnation (calm and cold)": 1.9626259343892642
+    }
+  },
+  "spatial": {
+    "alpha": {
+      "road": 0.21,
+      "ind": 0.35,
+      "dens": 0.21,
+      "elev": 0.21,
+      "slope": 0.07,
+      "fol": 0.11
+    },
+    "lambda": {
+      "road": 500.0,
+      "ind": 1000.0,
+      "fol": 300.0
+    },
+    "amplitude_scale": 1.0,
+    "robust_norm": true,
+    "anchored": true,
+    "station_factor": 1.5437629367525432,
+    "base_annual": 22.905570446939972,
+    "norms": {
+      "elev": [
+        474.0,
+        1166.9700000000012
+      ],
+      "slope": [
+        0.16601200625300408,
+        32.928622016906765
+      ],
+      "dens": [
+        0.0,
+        1085.0
+      ]
+    }
+  },
+  "robustness": {
+    "n_draws": 1000,
+    "rho_candidates_median": 0.9647680890538033,
+    "rho_candidates_min": 0.7677798392084106,
+    "rho_candidates_p5": 0.8604019789734074,
+    "rho_grid_median": 0.9906453472098138,
+    "hotspots": 25,
+    "hotspots_stable_90": 15
+  },
+  "candidates": {
+    "n": 99,
+    "pm_min": 23.776522379587963,
+    "pm_max": 39.237996589248034,
+    "cv": 0.08527854552612543
+  },
+  "community_validation": {}
+}
